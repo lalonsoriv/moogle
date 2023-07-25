@@ -1,6 +1,6 @@
 #!/bin/bash
 
-read -p "Escriba el comando que desea ejecutar a continuacion: "  commands
+read -p "Escriba el comando que desea ejecutar a continuación: "  commands
 
 case "$commands" in
 run)
@@ -43,7 +43,7 @@ run)
         rm -f ../informe/*.pdf
 		rm -f ../informe/*.synctex.gz
 		rm -f ../presentacion/*.pdf
-		rm -f ../presentacion/*.synctex.gzog	
+		rm -f ../presentacion/*.synctex.gz	
 	;;
 
 	exit)
