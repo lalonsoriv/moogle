@@ -1,15 +1,9 @@
-while [ true  ]
-do
+#!/bin/bash
 
-echo "Escriba options para poder ver la lista de opciones que se ofrecen"
+read -p "Escriba el comando que desea ejecutar a continuacion: "  commands
 
-read input
-
-case $input in 
-	options)
-        echo "Sus opciones son: run, clean, report, slides, show_report, show_slides"
-        ;;
-    run)
+case "$commands" in
+run)
 		cd ../
 		dotnet watch run --project MoogleServer
 		;;
@@ -52,8 +46,10 @@ case $input in
 		rm -f ../presentacion/*.synctex.gzog	
 	;;
 
+	exit)
+        break
+	;;
     *)echo "Esta no es una opción válida."
     ;;
 
 esac
-done  
