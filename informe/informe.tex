@@ -1,0 +1,185 @@
+\documentclass{article}
+\usepackage[left=2.5cm, right=2.5cm, top=3cm, bottom=3cm]{geometry}
+\renewcommand{\abstractname}{}
+\begin{document}
+\title{ \textbf{Moogle} (Proyecto de Pogramación I)}
+\author{ Laura Alonso Rivero C-122}
+\date{}
+\maketitle
+\rule{1.0\textwidth}{0.1mm}
+
+\begin{abstract}
+   En este proyecto se propuso la tarea de crear una aplicación web capaz de encontrar un 
+texto en un conjunto de documentos, para lograrlo se debía trabajar a partir de la biblioteca de clases \textbf{\textit{`MoogleEngine`}} modificando el algoritmo de búsqueda.
+\end{abstract}
+
+\large{El proyecto está estructurado de la siguiente manera:}
+\begin{itemize}
+    \item \large{ Para la carga de los datos existe una clase \textbf{\textit{`LoadData`}} que contiene un diccionario \textbf{\textit{(`wordsDictionary`)}} cuya llave está formada por las palabras de los documentos y como valor un diccionario  \textbf{\textit{(`docsDictionary`)}} que tiene como llave el id de cada  documento en los que aparece la palabra y como valor los detalles del documento dados en una clase  \textbf{\textit{(`WordDetails`)}} que presenta el número de ocurrencias de la palabra en el documento y su \textbf{TF-IDF}.}
+
+    \item \large{ Existen clases auxiliares donde se guardan los detalles de los documentos 
+(clases \textbf{\textit{`Doc`}} y \textbf{\textit{`directoryNames`}} almacenadas en una lista).}
+
+    \item \large{Para la búsqueda de la consulta de palabras se utiliza el método \textbf{\textit{`Search`}} que a partir de las palabras solicitadas por el usuario lista los detalles de los documentos encontrados (entre ellos: el camino completo, el nombre del documento el valor de \textbf{TF-IDF}).}\linebreak \\
+\end{itemize}
+
+\large{Diccionario de palabras (palabra,
+\newline\hspace*{5.5cm}Diccionario de documentos (docId,
+\newline\hspace*{11cm}DetallesDelDocumento-palabra))}\linebreak \\
+
+\large{DetallesDelDocumento-palabra [número de ocurrencias de la palabra en el documento,
+\newline\hspace*{6.2cm} TF-IDF de la palabra en el documento]}\linebreak \\
+
+ \begin{flushleft}
+\hspace*{0.5cm}\large{Doc [id de la ruta, nombre del documento, numero de palabras del documento]}\linebreak \\
+
+
+\hspace*{0.5cm}\large{DirectoryName [id de la ruta, ruta completa del documento]}\linebreak \\
+
+
+\hspace*{0.5cm}\large{Diccionario de Documentos (docId, Doc)}\linebreak \\
+
+
+\Large {\textbf{La carga de los datos}}\linebreak \\
+
+\large {Al iniciar el servicio web se realiza la carga de los datos. Los datos de entrada se 
+encuentran en la carpeta \textbf{\textit{`Content`}}, en este caso se creó la clase \textbf{\textit{`LoadData`}} para obtener el contenido de todos los ficheros txt que se encuentra en dicha carpeta.\linebreak \\
+
+La clase \textbf{\textit{`LoadData`}} contiene como método principal a \textbf{\textit{`Initialize`}} que se encargará de inicializar la base de datos dada partiendo de la obtención de las rutas de acceso a los 
+documentos. Se escogerá una a una la ruta de acceso y siempre que sea diferente se llenará la lista de \textbf{\textit{`directoryNames`}} que va a ser de tipo \textbf{\textit{`directoryName`}} (clase que 
+contiene la ruta de acceso y otorgara un id específico para cada una). Luego se leerá el contenido del documento utilizando el método \textbf{\textit{`NormalizeDoc`}} de la clase \textbf{\textit{`Normalize`}} para eliminar caracteres distintos a letras y números, además separará las palabras por espacios guardándolas en la lista de string \textbf{\textit{`wordsFromFile`}}. Posteriormente se obtendrán los valores de la clase \textbf{\textit{`Doc`}} (contiene el nombre del documento, el id de la ruta y la cantidad de palabras que contiene) que se añade a la lista \textbf{\textit{`documents`}}.\linebreak \\
+
+Para cada fichero que se lea se procede a llenar el diccionario \textbf{\textit{` wordsDictionary `}} (se 
+insertaran solo las palabras que tengan un tamaño mayor estricto que 2 (así se eliminarán las letras y monosílabos que tendrán poca relevancia a la hora de procesar la consulta), los valores para esta llave serán otro diccionario llamado \textbf{\textit{`docsDictionary`}} (su llave serán los documentos y los valores la clase \textbf{\textit{`WordDetails`}} (presenta el  \textbf{TF-IDF} de la palabra en el documento y su número de ocurrencia))).\linebreak \\
+
+El  \textbf{TF-IDF (Term Frequency - Inverse Document Frecuency)} mide que tan relevante es 
+una palabra en un conjunto de documentos gracias a la multiplicación del  \textbf{tf} y el  \textbf{idf}. El  \textbf{tf } es la cantidad de veces que aparece una palabra en un documento entre la cantidad de 
+palabras que posee el documento. Mientras el  \textbf{idf} es el logaritmo de la razón entre el total 
+de documentos que se procesan y los documentos que contienen a la palabra. En 
+resumen, una palabra es más relevante cuando un documento la contiene mucho, pero 
+en cambio esta aparece en pocos de los documentos de la muestra. En este caso para 
+evitar que palabras como preposiciones, conjunciones y otras igual de comunes sean 
+incorrectamente consideradas relevantes se estableció que si aparecía en más del 80\% 
+de los documentos fuesen descartadas}
+\end{flushleft}
+
+\begin{center}
+\begin{equation}
+TF-IDF = \frac{\textup{cant de apariciones}}{\textup{cant de palabras}}\times\log\frac{\textup{total de docs}}{\textup{docs con la palabra}}
+\end{equation}
+\end{center}
+
+\begin{flushleft}
+\Large {\textbf{Búsqueda de palabras}}\linebreak \\
+\large {Una vez inicializada la data se procede a pedir al usuario que introduzca su búsqueda. 
+El usuario puede elegir una palabra o una frase e incluir en cada palabra operadores 
+tales como:}
+
+\begin{itemize}
+\item\large{ `\textexclamdown` (exige que la palabra no se encuentre en los documentos devueltos)}
+\item\large{`\^` (exige que la palabra se encuentre en los documentos devueltos)
+}
+\item\large{`*` (da mayor importancia a los documentos que contengan esta palabra)
+}
+\end{itemize}
+
+\large {Si estos operadores son usados erróneamente se detendrá la búsqueda
+automáticamente y se enviará un mensaje a la página advirtiendo su correcto uso. 
+Casos de usos erróneos:}
+
+\begin{itemize}
+\item\large{ Si la palabra contiene `\textexclamdown` como primer carácter y después le siguen otros operadores}
+\item\large{Si la palabra contiene `\^` como primer carácter y después le siguen otros operadores}
+\item\large{Si la palabra contiene `*` y después le sigue `\textexclamdown`}
+\end{itemize}
+
+\large {El usuario debe tener en cuenta es que si se utiliza `*` y después le sigue `\^` el programa 
+solo presentará como respuesta de la búsqueda únicamente los documentos que 
+contengan esta palabra.\linebreak \\
+
+El método de búsqueda \textbf{\textit{`Query`}} se encuentra en la clase \textbf{\textit{`Moogle`}} y devolverá una 
+variable de tipo \textbf{\textit{`SearchResult`}} (contiene un arreglo de \textbf{\textit{`SearchItem`}} y un string). Este 
+empezara normalizando la query por el método \textbf{\textit{`NormalizeQuery`}} de la clase \textbf{\textit{`Normalize`}} 
+para eliminar caracteres distintos a letras, números y operadores, además separara las 
+palabras por espacios guardándolas en la lista de string \textbf{\textit{`queryListed`}}.\linebreak \\
+
+Una vez normalizada se procede a verificar por cada palabra si contiene algún operador 
+al inicio. En caso positivo y que este bien empleado se devolverá la palabra sin operador 
+para poder comenzar la búsqueda y se guardará la información del operador en una 
+variable de tipo \textbf{\textit{`Operators`}} para ser utilizada más adelante. En caso negativo se 
+devolverá la palabra tal cual fue introducida.\linebreak \\
+
+Con esta palabra se procederá a llenar la lista \textbf{\textit{`results`}} de tipo \textbf{\textit{`Searcher`}} (contiene el nombre del documento donde está presente, el id de la ruta, el número de ocurrenciasde la palabra y el valor del \textit{ TF-IDF}) con el método \textbf{\textit{`Search`}} de la clase \textbf{\textit{`LoadData`}} siempre que la palabra se encuentre en alguno de los documentos o que no se haya considerada una palabra poco relevante. \linebreak \\
+
+En caso de que no se encuentre la palabra se llenará la lista \textbf{\textit{`suggestions`}} que buscará
+por el método de \textbf{\textit{`FindSimilarities`}} de la clase \textbf{\textit{`LevenshteinMethod`}} las cuatro palabras presentes en el diccionario más similares a esta. Este método utiliza el algoritmo de 
+Levenshtein (utiliza matrices siendo las filas las letras de la palabra de la query y las 
+columnas las letras de la palabra del diccionario) para dar este criterio de similaridad. 
+Para hacer la búsqueda de palabras más efectiva se consideró que si una palabra del 
+diccionario tenía un tamaño menor/mayor o igual que el de la palabra a la que se le 
+buscaba la similaridad aumentado/disminuido en 3 debía ser descartada pues los 
+cambios necesarios para convertir una en la otra (eliminación, inserción o sustitución de 
+caracteres) serían superiores al rango deseado (un valor de distancia menor o igual que 
+30). Luego se añadirán a la lista las 4 palabras de menor valor (más similares).\linebreak \\
+
+Si la palabra es encontrada en los documentos entonces se procede a llenar por cada 
+documento los datos de la lista \textbf{\textit{`finalResults`}} de tipo \textbf{\textit{`SearchItemPLus`}} (contiene el títulodel documento, el snippet, el score, la cantidad de palabras de la query que presenta el documento y el id de la ruta del documento). Si dos documentos presentan el mismo nombre, pero están en carpetas distintas igual se escogerán debido a que se le da un 
+índice por su ruta y nombre. Si el índice no se encuentra en la lista añadirá el \textit{TF-IDF} y 
+lo sumará al peso del operador `*` si existe convirtiendo esto en el score y añadirá la 
+palabra a la lista de palabras de la query que presenta el documento. De lo contrario 
+suma el \textit{TF-IDF} de existente con el de la nueva palabra y sumará al peso del operador 
+`*` si existe al score existente y añadirá la palabra a la lista de palabras de la query 
+presentes en el documento.\linebreak \\
+
+El snippet del documento se calculará a partir de la primera palabra de la consulta que
+aparezca en él. Para obtenerlo se llamará al método \textbf{\textit{`Snippet`}} de la clase \textbf{\textit{`Doc`}}. Se estableció que este debía devolver un substring que contuviese a la palabra y 50 caracteres hacia la derecha partiendo del índice de la primera letra de la palabra (siempre 
+que fuese posible) y 50 hacia la izquierda (siempre que fuese posible), teniendo en 
+cuenta el tamaño de la palabra.\linebreak \\
+
+Una vez que se buscan todas las palabras de la consulta si el resultado de la misma es 
+nulo se enviará al usuario una lista de palabras como sugerencia para que esta sea 
+efectiva.\linebreak \\
+
+En caso de tener resultados se procederá a recorrer la lista de palabras con operadores. 
+Si se encuentra que alguna palabra contiene `\textexclamdown` se eliminan de la lista de búsqueda todos los documentos que la contengan. En cambio, si la palabra posee `\^` se eliminan todos 
+los documentos que no la contengan. Posteriormente se procede a ordenarlos partiendo 
+de los siguientes criterios:}
+
+\begin{itemize}
+\item\large{Si el documento que se está verificando posee menor cantidad de palabras de la 
+consulta que el anterior se encontrará en una posición inferior a este.}
+\item\large{ Si el documento que se está verificando posee mayor cantidad de palabras de la 
+consulta que el anterior se encontrará en una posición superior a este.}
+\item\large{ Si la cantidad de palabras de la consulta de ambos documentos es igual, si el score de 
+este documento es menor que el del anterior se encontrará en una posición inferior.}
+\item\large{Si el score del documento que se está verificando es mayor que el anterior se 
+encontrara en una posición superior.}
+\item\large{ Si los scores también son iguales se mantendrán en el orden que se encuentran.}
+\end{itemize}
+
+Si no se encuentran operadores procederá a ordenarlos con los mismos criterios 
+anteriores.\linebreak \\
+Luego se llenará una lista de tipo \textbf{\textit{`SearchItem`}} (contiene el título del documento, el 
+snippet y el score) con los elementos correspondientes de la lista \textbf{\textit{`finalResults`}}. Para 
+terminar, se devolverá una nueva variable de tipo `SearchResult` a la que se le pasará
+como primer valor esta lista llevada a arreglo. \linebreak \\
+De esta forma el usuario podrá saber en qué documentos esta la query buscada y se le 
+da solución a la tarea principal.\linebreak \\
+
+\Large {\textbf{ Propuestas para el mejoramiento de la web en el futuro}}\linebreak \\
+\begin{itemize}
+\item\large{ Se puede utilizar el algoritmo de Porter a la hora de hacer el diccionario de palabras 
+pues con este se va a eliminar todos los sufijos tales como género, numero, persona, 
+tiempos verbales, diminutivos... y se quedara solamente con las raíces de las palabras 
+lo que reducirá el tamaño del diccionario y hará que la carga de la basa de datos y 
+posterior búsqueda de la query sea más rápida y eficiente.}
+\item\large{ Se puede guardar la data en un fichero estructurado para ahorrar tiempo a la hora de 
+inicializar y recalcularlo solo cada vez que se carguen otros ficheros en la carpeta 
+\textbf{\textit{`Content`}}.}
+\item\large{ Se puede realizar una búsqueda exacta de frase de más de dos palabras que estén 
+entre comillas en el criterio de búsqueda.}
+\end{itemize}
+
+\end{flushleft}
+
+\end{document}
